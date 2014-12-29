@@ -3,9 +3,7 @@
  */
 
 var debug = require('debug')('modella:leveldb');
-var indexing = require('leveldex');
-var sublevel = require('level-sub');
-var level = require('level-11');
+var indexing = require('subindex');
 var noop = function() {};
 var sync = {};
 
@@ -16,13 +14,15 @@ var sync = {};
 module.exports = function(path, options) {
   options = options || {};
   options.valueEncoding = options.valueEncoding || 'json';
+  var sublevel = options.sublevel || require('level-sublevel');
 
   // allow you to pass your own instance in
-  var db = path.get && path.put ? path : level(path, options);
+  var db = path.get && path.put ? path : require('level')(path, options);
+
 
   return function(model) {
-    model.db = sublevel(db).sublevel(model.modelName);
-    indexing(model.db);
+    model.db = sublevel(db).sublevel(model.modelName, {valueEncoding: 'json'});
+    model.db = indexing(model.db);
     for (fn in sync) model[fn] = sync[fn];
   };
 };
@@ -35,10 +35,7 @@ sync.index = function(key, opts) {
   opts = opts || {};
 
   // index the DB usuing level-indexing
-  this.db.index(key);
-
-  // ensure the key is unique
-  opts.unique && this.db.unique(key);
+  this.db.ensureIndex(key);
 
   return this;
 };
@@ -103,10 +100,10 @@ sync.find = function(key, options, fn) {
   if ('object' == typeof key) {
     var k = Object.keys(key)[0];
     var v = key[k];
-    db.by(k, v, options, function(err, json) {
+    db.getBy(k, v, options, function(err, json) {
       if (err) return err.notFound ? fn(null, null) : fn(err);
       debug('got %j', json);
-      return fn(null, model(json));
+      return fn(null, model(json.value));
     });
   } else {
     db.get(key, options, function(err, json) {

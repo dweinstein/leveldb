@@ -6,9 +6,8 @@
   "author": "matt mueller <mattmuelle@gmail.com>",
   "dependencies": {
     "debug": "~0.7.2",
-    "level-11": "0.18.0",
-    "level-sub": "^0.3.4",
-    "leveldex": "^0.3.0"
+    "level-sublevel": "^6.4.0",
+    "subindex": "git+https://github.com/dweinstein/subindex.git#dev"
   },
   "devDependencies": {
     "mocha": "^2.0.1",
@@ -16,7 +15,8 @@
     "pwd": "*",
     "rimraf": "^2.2.8",
     "should": "*",
-    "uid": "0.0.2"
+    "uid": "0.0.2",
+    "level": "^0.18.0"
   },
   "main": "index"
 }
