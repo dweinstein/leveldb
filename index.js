@@ -4,6 +4,7 @@
 
 var debug = require('debug')('modella:leveldb');
 var indexing = require('subindex');
+var util = require('util');
 var noop = function() {};
 var sync = {};
 
@@ -103,6 +104,13 @@ sync.find = function(key, options, fn) {
     db.getBy(k, v, options, function(err, json) {
       if (err) return err.notFound ? fn(null, null) : fn(err);
       debug('got %j', json);
+      if (util.isArray(json)) {
+        var res = [];
+        for (var kk in json) {
+          res.push(model(json[kk].value));
+        }
+        return fn(null, res);
+      }
       return fn(null, model(json.value));
     });
   } else {
